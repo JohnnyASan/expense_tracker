@@ -1,34 +1,11 @@
-import mysql.connector
-import os
-from dotenv import load_dotenv
-load_dotenv()
+import mysql_client as client
+import datetime
 
-host = "localhost"
-user = os.getenv('MYSQL_USERNAME')
-password = os.getenv('MYSQL_PASSWORD')
-database = "finances"
+rows = client.cmd(("SELECT date_created, transactions.name, amount, categories.name "
+                   "FROM transactions "
+                   "JOIN categories ON transactions.categories_id=categories.categories_id "
+                   "ORDER BY date_created"), ())
 
-try:
-    # Establish a connection
-    connection = mysql.connector.connect(
-        host=host,
-        user=user,
-        password=password,
-        database=database
-    )
+for r in rows:
+    print(r[0].strftime("%Y-%m-%d") + ": " + r[1] + " - $" + str(r[2]) + " <" + r[3] + ">")
 
-    # Create a cursor
-    cursor = connection.cursor()
-
-    # Execute a simple query (e.g., selecting the current database)
-    cursor.execute("SELECT DATABASE();")
-    database_name = cursor.fetchone()[0]
-
-    print(f"Connected to database: {database_name}")
-
-    # Don't forget to close the cursor and connection when you're done!
-    cursor.close()
-    connection.close()
-
-except mysql.connector.Error as err:
-    print(f"Error: {err}")
